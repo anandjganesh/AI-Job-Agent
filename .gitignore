@@ -1,0 +1,17 @@
+venv/
+__pycache__/
+*.pyc
+
+.env
+
+jobs.db
+matched_jobs.csv
+
+resumes/*.pdf
+
+.vscode/
+
+.streamlit/
+
+.DS_Store
+Thumbs.db
