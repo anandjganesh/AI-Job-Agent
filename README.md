@@ -21,7 +21,7 @@ Resume → Skill Extraction → LinkedIn Job Search → Job Description Scraping
 
 * Python
 * Streamlit
-* Selenium
+* Playwright
 * Sentence Transformers
 * Scikit-learn
 * SQLite
