@@ -2,7 +2,10 @@ import sqlite3
 import pandas as pd
 import streamlit as st
 
-# Page config
+# ----------------------------------
+# PAGE CONFIG
+# ----------------------------------
+
 st.set_page_config(
     page_title="AI Job Agent",
     layout="wide"
@@ -10,7 +13,10 @@ st.set_page_config(
 
 st.title("🚀 AI Job Agent")
 
-# Load data
+# ----------------------------------
+# LOAD DATA
+# ----------------------------------
+
 conn = sqlite3.connect("jobs.db")
 
 df = pd.read_sql(
@@ -20,12 +26,18 @@ df = pd.read_sql(
 
 conn.close()
 
-# Check if data exists
+# ----------------------------------
+# CHECK DATA
+# ----------------------------------
+
 if df.empty:
     st.warning("No jobs found in the database.")
     st.stop()
 
-# Sidebar filters
+# ----------------------------------
+# SIDEBAR FILTERS
+# ----------------------------------
+
 st.sidebar.header("Filters")
 
 min_score = st.sidebar.slider(
@@ -44,7 +56,10 @@ selected_role = st.sidebar.selectbox(
     roles
 )
 
-# Apply filters
+# ----------------------------------
+# APPLY FILTERS
+# ----------------------------------
+
 filtered_df = df[
     df["score"] >= min_score
 ]
@@ -54,15 +69,43 @@ if selected_role != "All":
         filtered_df["role"] == selected_role
     ]
 
-# Metrics
+# ----------------------------------
+# METRICS
+# ----------------------------------
+
 st.metric(
     "Total Jobs",
     len(filtered_df)
 )
 
+# ----------------------------------
+# TOP MATCHES
+# ----------------------------------
+
+st.subheader("🔥 Top Matches")
+
+top_jobs = filtered_df.sort_values(
+    by="score",
+    ascending=False
+).head(5)
+
+st.dataframe(
+    top_jobs[
+        [
+            "title",
+            "company",
+            "score"
+        ]
+    ],
+    use_container_width=True
+)
+
 st.divider()
 
-# Display jobs
+# ----------------------------------
+# JOB CARDS
+# ----------------------------------
+
 for _, job in filtered_df.iterrows():
 
     with st.container():
@@ -70,7 +113,13 @@ for _, job in filtered_df.iterrows():
         col1, col2 = st.columns([4, 1])
 
         with col1:
-            st.subheader(job.get("title", "Unknown Title"))
+
+            st.subheader(
+                job.get(
+                    "title",
+                    "Unknown Title"
+                )
+            )
 
             st.write(
                 f"🏢 **Company:** {job.get('company', 'N/A')}"
@@ -81,16 +130,25 @@ for _, job in filtered_df.iterrows():
             )
 
             st.write(
-                f"📌 **Status:** {job.get('status', 'N/A')}"
+                f"📌 **Status:** {job.get('status', 'Pending')}"
             )
 
-            # Show clickable URL if available
-            if "url" in df.columns and pd.notna(job["url"]):
+            # NEW
+            st.write(
+                f"💡 **Recommendation:** {job.get('recommendation', 'N/A')}"
+            )
+
+            # URL
+            if (
+                "url" in filtered_df.columns
+                and pd.notna(job["url"])
+            ):
                 st.markdown(
                     f"🔗 [View Job Posting]({job['url']})"
                 )
 
         with col2:
+
             st.metric(
                 "Match Score",
                 f"{int(job.get('score', 0))}%"
@@ -98,8 +156,12 @@ for _, job in filtered_df.iterrows():
 
         st.divider()
 
-# Optional table view
+# ----------------------------------
+# RAW DATA
+# ----------------------------------
+
 with st.expander("View Raw Data"):
+
     st.dataframe(
         filtered_df,
         use_container_width=True
